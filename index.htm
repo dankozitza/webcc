@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+   <meta charset="UTF-8" />
+   <title>Control Center</title>
+</head>
+<body>
+<script>
+</script>
+<h1><center>Control Center</center></h1>
+<h2><center>statdist</center></h2>
+<script>
+var xhr = new XMLHttpRequest();
+xhr.open('GET', "/statdist", false);
+xhr.send();
+
+var statObject = eval('(' + xhr.response + ')');
+
+var i = 0;
+
+while (statObject[i.toString()]) {
+   document.write(statObject[i.toString()].ShortStack + "<br>");
+   i++;
+}
+
+</script>
+<h2><center>stdout</center></h2>
+<script>
+
+var xhr = new XMLHttpRequest();
+xhr.open('GET', "/stdout", false);
+xhr.send();
+
+//pat = /\n/;
+
+document.write(xhr.response);
+
+</script>
+
+</body>
+</html>
