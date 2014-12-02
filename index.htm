@@ -8,6 +8,24 @@
 </head>
 <body>
 <script>
+
+function buildtable(s) {
+   ret = "<tr>";
+   for (var i = 0; i < s.length; i++) {
+      ret += "<td>" + s.key(i) + "</td>";
+   }
+   ret += "</tr>";
+   return ret;
+}
+
+//function printStat(Stat) {
+//   document.write("<table style=\"table-layout:fixed;width:500px\">")
+//   //document.write(Stat.Id + " " + Stat.Status + " " + Stat.ShortStack + "</td>")
+//   //document.write("<td>" + Stat.Message + "</td>")
+//   document.write(buildtable(Stat))
+//   document.write("</table>")
+//}
+
 </script>
 <h1><center>Control Center</center></h1>
 <h2><center>statdist</center></h2>
@@ -16,14 +34,16 @@ var xhr = new XMLHttpRequest();
 xhr.open('GET', "/statdist", false);
 xhr.send();
 
-var statObject = eval('(' + xhr.response + ')');
+var statMap = eval('(' + xhr.response + ')');
 
 var i = 0;
 
-while (statObject[i.toString()]) {
-   document.write(statObject[i.toString()].ShortStack + "<br>");
+document.write("<table style=\"table-layout:fixed;width:500px\">")
+while (statMap[i.toString()]) {
+   document.write(buildtable(statMap[i.toString()]))
    i++;
 }
+document.write("</table>")
 
 </script>
 <h2><center>stdout</center></h2>
