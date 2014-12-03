@@ -7,28 +7,46 @@
    <title>Control Center</title>
 </head>
 <body>
-<script>
 
-function buildtable(s) {
-   ret = "<tr>";
-   for (var i = 0; i < s.length; i++) {
-      ret += "<td>" + s.key(i) + "</td>";
+<style>
+   td {
+      border: 1px solid black;
    }
-   ret += "</tr>";
+</style>
+
+<script>
+// buildcollumbs
+//
+// takes an object and iterates through it's properties returning a string
+// with tr tags wrapped around the values of the object's properties. expected
+// to be used on stat objects. color's the tr tags if the Status property is
+// found.
+//
+function buildcollumbs(s) {
+   ret = "";
+   for (k in s) {
+      if (k == "Status") {
+         c = "green";
+         if (s[k] == "WARN") {
+            c = "yellow";
+         }
+         else if (s[k] == "ERROR" || s[k] == "PANIC") {
+            c = "red";
+         }
+         ret += "<td style=\"background-color:" + c + "\">" + s[k] + "</td>"
+      }
+      else {
+         ret += "<td>" + s[k] + "</td>"
+      }
+   }
    return ret;
 }
-
-//function printStat(Stat) {
-//   document.write("<table style=\"table-layout:fixed;width:500px\">")
-//   //document.write(Stat.Id + " " + Stat.Status + " " + Stat.ShortStack + "</td>")
-//   //document.write("<td>" + Stat.Message + "</td>")
-//   document.write(buildtable(Stat))
-//   document.write("</table>")
-//}
-
 </script>
-<h1><center>Control Center</center></h1>
-<h2><center>statdist</center></h2>
+
+<center>
+<h1>Control Center</h1>
+<h2>statdist</h2>
+
 <script>
 var xhr = new XMLHttpRequest();
 xhr.open('GET', "/statdist", false);
@@ -36,28 +54,29 @@ xhr.send();
 
 var statMap = eval('(' + xhr.response + ')');
 
+// display statMap
 var i = 0;
-
-document.write("<table style=\"table-layout:fixed;width:500px\">")
+document.write("<table>");// style=\"table-layout:fixed;width:800px\">")
+document.write("<tr>" + buildcollumbs(Object.keys(statMap["0"])) + "</tr>")
 while (statMap[i.toString()]) {
-   document.write(buildtable(statMap[i.toString()]))
+   document.write("<tr>" + buildcollumbs(statMap[i.toString()]) + "</tr>")
    i++;
 }
 document.write("</table>")
-
 </script>
-<h2><center>stdout</center></h2>
-<script>
 
+<h2>stdout</h2>
+
+<script>
 var xhr = new XMLHttpRequest();
 xhr.open('GET', "/stdout", false);
 xhr.send();
 
-//pat = /\n/;
-
+document.write("<table><tr><td>");
 document.write(xhr.response);
-
+document.write("</td></tr></table>");
 </script>
 
+</center>
 </body>
 </html>
