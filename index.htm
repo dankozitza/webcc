@@ -19,7 +19,7 @@
 //
 // takes an object and iterates through it's properties returning a string
 // with tr tags wrapped around the values of the object's properties. expected
-// to be used on stat objects. color's the tr tags if the Status property is
+// to be used on stat objects. colors the tr tags if the Status property is
 // found.
 //
 function buildcollumbs(s) {
@@ -52,6 +52,7 @@ var xhr = new XMLHttpRequest();
 xhr.open('GET', "/statdist", false);
 xhr.send();
 
+// creat an object from the statdist JSON
 var statMap = eval('(' + xhr.response + ')');
 
 // display statMap
