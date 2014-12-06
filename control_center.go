@@ -14,10 +14,11 @@ import (
 
 var log_file string = "cc.log"
 
-var conf sconf.Sconf = sconf.New("config.json",
+var conf sconf.Sconf = sconf.Init("config.json",
 	sconf.Sconf{"logtrack_default_log_file": log_file})
 
 var log logtrack.LogTrack = logtrack.New()
+var access logtrack.LogTrack = logtrack.New()
 
 var stat stattrack.StatTrack = stattrack.New("test control center")
 
@@ -25,7 +26,7 @@ type staticfile string
 
 func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	log.P(r, "\n")
+	access.P(r, "\n")
 
 	fi, err := os.Open(string(f))
 	if err != nil {
@@ -51,17 +52,23 @@ func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	var jsm statdist.JSONStatMap
+	access.Set_log_file_path("cc_access.log")
+
+	var jsm statdist.HTTPHandler
 	http.Handle("/statdist", jsm)
 
-	var sldh logdist.LogDistHandler = "stdout"
+	var sldh logdist.HTTPHandler = "stdout"
 	http.Handle("/stdout", sldh)
 
-	var ldh logdist.LogDistHandler = logdist.LogDistHandler(log_file)
+	var ldh logdist.HTTPHandler = logdist.HTTPHandler(log_file)
 	http.Handle("/logfile", ldh)
 
 	var in staticfile = "index.htm"
 	http.Handle("/cc", in)
+
+	client_conf := sconf.New("client_config.json", nil)
+	var cli sconf.HTTPHandler = sconf.HTTPHandler(client_conf)
+	http.Handle("/clientconf", cli)
 
 	log.P("starting http server\n")
 
