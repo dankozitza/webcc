@@ -70,6 +70,11 @@ func main() {
 	var cli sconf.HTTPHandler = sconf.HTTPHandler(client_conf)
 	http.Handle("/clientconf", cli)
 
+	var fsh http.Handler = http.StripPrefix(
+		"/fs/",
+		http.FileServer(http.Dir("/tmp/static")))
+	http.Handle("/fs/", fsh)
+
 	log.P("starting http server\n")
 
 	http.ListenAndServe("localhost:9000", nil)
