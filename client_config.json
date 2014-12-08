@@ -1,0 +1,13 @@
+{
+   "body":{
+      "backgroundColor":"tan"
+   },
+   "links":{
+      "distribution center": "/cc",
+      "statdist": "/statdist",
+      "client conf": "/clientconf",
+      "stdout": "/stdout",
+      "file server": "/",
+      "access": "/access"
+   }
+}

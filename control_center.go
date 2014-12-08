@@ -10,9 +10,11 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 )
 
 var log_file string = "cc.log"
+var access_log string = "cc_access.log"
 
 var conf sconf.Sconf = sconf.Init("config.json",
 	sconf.Sconf{"logtrack_default_log_file": log_file})
@@ -26,7 +28,7 @@ type staticfile string
 
 func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	access.P(r, "\n")
+	access.P(r, "<br>\n")
 
 	fi, err := os.Open(string(f))
 	if err != nil {
@@ -50,9 +52,37 @@ func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	stat.Pass("served " + fmt.Sprint(r.URL) + " to " + r.RemoteAddr)
 }
 
+var fsh http.Handler = http.FileServer(http.Dir("/tmp/static"))
+
+type myFileServer string
+
+func (mfs myFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	access.P("----request: ", r, "<br>\n")
+
+   fsh.ServeHTTP(w, r)
+	access.P("---response: ", w, "<br>\n\n")
+
+   //if (fsh.err != nil) {
+   //   stat.Err("FileServer handler failed!: " + err.Error())
+   //   return
+   //}
+   stat.Pass("served " + fmt.Sprint(r.URL) + " to " + r.RemoteAddr)
+}
+
 func main() {
 
-	access.Set_log_file_path("cc_access.log")
+	access.Set_log_file_path(access_log)
+   access.To_Stdout = false
+
+	var fsh myFileServer // = http.FileServer(http.Dir("/tmp/static"))
+	s := &http.Server{
+		Addr:           "localhost:8999",
+		Handler:        fsh,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 22,
+	}
+	go s.ListenAndServe()
 
 	var jsm statdist.HTTPHandler
 	http.Handle("/statdist", jsm)
@@ -63,6 +93,9 @@ func main() {
 	var ldh logdist.HTTPHandler = logdist.HTTPHandler(log_file)
 	http.Handle("/logfile", ldh)
 
+	var ah logdist.HTTPHandler = logdist.HTTPHandler(access_log)
+	http.Handle("/access", ah)
+
 	var in staticfile = "index.htm"
 	http.Handle("/cc", in)
 
@@ -70,13 +103,17 @@ func main() {
 	var cli sconf.HTTPHandler = sconf.HTTPHandler(client_conf)
 	http.Handle("/clientconf", cli)
 
-	var fsh http.Handler = http.StripPrefix(
-		"/fs/",
-		http.FileServer(http.Dir("/tmp/static")))
-	http.Handle("/fs/", fsh)
+	//var fsh http.Handler = http.StripPrefix(
+	//   "/tmp/static/",
+	//   http.FileServer(http.Dir("/tmp/static")))
+
+	log.P(1 << 22, "\n")
+
+	//http.DefaultMaxHeaderBytes = 4194304
 
 	log.P("starting http server\n")
 
-	http.ListenAndServe("localhost:9000", nil)
+	//http.ListenAndServe(":9000", http.FileServer(http.Dir("/tmp/static")))
+	log.P(http.ListenAndServe("localhost:9000", nil))
 	return
 }
