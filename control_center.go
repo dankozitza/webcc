@@ -67,7 +67,7 @@ func (mfs myFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	access.Set_log_file_path(access_log)
+	access.Log_file = access_log
 	access.To_Stdout = false
 
 	var fsh myFileServer // = http.FileServer(http.Dir("/tmp/static"))
@@ -99,8 +99,6 @@ func main() {
 
 	var in staticfile = "index.htm"
 	http.Handle(links["distribution center"].(string), in)
-
-	log.P(1<<22, "\n")
 
 	log.P("starting http server\n")
 
