@@ -28,7 +28,7 @@ type staticfile string
 
 func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	access.P(r, "<br>\n")
+   access.P(r.RemoteAddr, " ", r, "\n")
 
 	fi, err := os.Open(string(f))
 	if err != nil {
@@ -54,18 +54,14 @@ func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 var fsh http.Handler = http.FileServer(http.Dir("/tmp/static"))
 
-type myFileServer string
+type myFileServer struct{}
 
 func (mfs myFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	access.P("----request: ", r, "<br>\n")
+	access.P(r.RemoteAddr, " ", r, "\n")
 
    fsh.ServeHTTP(w, r)
-	access.P("---response: ", w, "<br>\n\n")
+	//access.P("---response: ", w, "\n")
 
-   //if (fsh.err != nil) {
-   //   stat.Err("FileServer handler failed!: " + err.Error())
-   //   return
-   //}
    stat.Pass("served " + fmt.Sprint(r.URL) + " to " + r.RemoteAddr)
 }
 
@@ -84,36 +80,31 @@ func main() {
 	}
 	go s.ListenAndServe()
 
+	client_conf := sconf.New("client_config.json", nil)
+   links := client_conf["Links"].(map[string]interface{})
+   log.P(links, "\n")
+	var cli sconf.HTTPHandler = sconf.HTTPHandler(client_conf)
+	http.Handle(links["client conf"].(string), cli)
+
 	var jsm statdist.HTTPHandler
-	http.Handle("/statdist", jsm)
+	http.Handle(links["statdist"].(string), jsm)
 
 	var sldh logdist.HTTPHandler = "stdout"
-	http.Handle("/stdout", sldh)
+	http.Handle(links["stdout"].(string), sldh)
 
 	var ldh logdist.HTTPHandler = logdist.HTTPHandler(log_file)
 	http.Handle("/logfile", ldh)
 
 	var ah logdist.HTTPHandler = logdist.HTTPHandler(access_log)
-	http.Handle("/access", ah)
+	http.Handle(links["access"].(string), ah)
 
 	var in staticfile = "index.htm"
-	http.Handle("/cc", in)
-
-	client_conf := sconf.New("client_config.json", nil)
-	var cli sconf.HTTPHandler = sconf.HTTPHandler(client_conf)
-	http.Handle("/clientconf", cli)
-
-	//var fsh http.Handler = http.StripPrefix(
-	//   "/tmp/static/",
-	//   http.FileServer(http.Dir("/tmp/static")))
+	http.Handle(links["distribution center"].(string), in)
 
 	log.P(1 << 22, "\n")
 
-	//http.DefaultMaxHeaderBytes = 4194304
-
 	log.P("starting http server\n")
 
-	//http.ListenAndServe(":9000", http.FileServer(http.Dir("/tmp/static")))
 	log.P(http.ListenAndServe("localhost:9000", nil))
 	return
 }

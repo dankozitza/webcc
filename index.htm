@@ -6,11 +6,15 @@
    <meta charset="UTF-8" />
    <title>Control Center</title>
 </head>
-<body>
+<body id="main">
 
 <style>
    td {
-      border: 1px solid black;
+      border: 1px solid grey;
+      background-color: white;
+   }
+   body {
+      background-color: tan;
    }
 </style>
 
@@ -18,8 +22,8 @@
 // buildcollumbs
 //
 // takes an object and iterates through it's properties returning a string
-// with tr tags wrapped around the values of the object's properties. expected
-// to be used on stat objects. colors the tr tags if the Status property is
+// with td tags wrapped around the values of the object's properties. expected
+// to be used on stat objects. colors the td tags if the Status property is
 // found.
 //
 function buildcollumbs(s) {
@@ -44,7 +48,24 @@ function buildcollumbs(s) {
 </script>
 
 <center>
-<h1>Control Center</h1>
+
+<script>
+var xhr = new XMLHttpRequest();
+xhr.open('GET', "/clientconf", false);
+xhr.send();
+var config = eval('(' + xhr.response + ')');
+var body = document.querySelector("#main");
+if (config.body["backgroundColor"]) {
+   body.style.backgroundColor = config.body["backgroundColor"];
+}
+for (linkName in config.Links) {
+   document.write(
+      "<a href=\"" + config.Links[linkName] + "\">" + linkName + "</a>&nbsp;");
+}
+</script>
+
+<h1>Distribution Center</h1>
+<br>
 <h2>statdist</h2>
 
 <script>
@@ -66,11 +87,35 @@ while (statMap[i.toString()]) {
 document.write("</table>")
 </script>
 
+<h2>clientconf</h2>
+
+<script>
+var xhr = new XMLHttpRequest();
+xhr.open('GET', "/clientconf", false);
+xhr.send();
+
+document.write("<table><tr><td>");
+document.write(xhr.response);
+document.write("</td></tr></table>");
+</script>
+
 <h2>stdout</h2>
 
 <script>
 var xhr = new XMLHttpRequest();
 xhr.open('GET', "/stdout", false);
+xhr.send();
+
+document.write("<table><tr><td>");
+document.write(xhr.response);
+document.write("</td></tr></table>");
+</script>
+
+<h2>access</h2>
+
+<script>
+var xhr = new XMLHttpRequest();
+xhr.open('GET', "/access", false);
 xhr.send();
 
 document.write("<table><tr><td>");

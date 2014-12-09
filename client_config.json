@@ -2,12 +2,12 @@
    "body":{
       "backgroundColor":"tan"
    },
-   "links":{
+   "Links":{
       "distribution center": "/cc",
       "statdist": "/statdist",
       "client conf": "/clientconf",
       "stdout": "/stdout",
-      "file server": "/",
+      "file server": "http://localhost:8999",
       "access": "/access"
    }
 }
