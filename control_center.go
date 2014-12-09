@@ -28,7 +28,7 @@ type staticfile string
 
 func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-   access.P(r.RemoteAddr, " ", r, "\n")
+	access.P(r.RemoteAddr, " ", r, "\n")
 
 	fi, err := os.Open(string(f))
 	if err != nil {
@@ -59,16 +59,16 @@ type myFileServer struct{}
 func (mfs myFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	access.P(r.RemoteAddr, " ", r, "\n")
 
-   fsh.ServeHTTP(w, r)
+	fsh.ServeHTTP(w, r)
 	//access.P("---response: ", w, "\n")
 
-   stat.Pass("served " + fmt.Sprint(r.URL) + " to " + r.RemoteAddr)
+	stat.Pass("served " + fmt.Sprint(r.URL) + " to " + r.RemoteAddr)
 }
 
 func main() {
 
 	access.Set_log_file_path(access_log)
-   access.To_Stdout = false
+	access.To_Stdout = false
 
 	var fsh myFileServer // = http.FileServer(http.Dir("/tmp/static"))
 	s := &http.Server{
@@ -81,8 +81,7 @@ func main() {
 	go s.ListenAndServe()
 
 	client_conf := sconf.New("client_config.json", nil)
-   links := client_conf["Links"].(map[string]interface{})
-   log.P(links, "\n")
+	links := client_conf["Links"].(map[string]interface{})
 	var cli sconf.HTTPHandler = sconf.HTTPHandler(client_conf)
 	http.Handle(links["client conf"].(string), cli)
 
@@ -101,7 +100,7 @@ func main() {
 	var in staticfile = "index.htm"
 	http.Handle(links["distribution center"].(string), in)
 
-	log.P(1 << 22, "\n")
+	log.P(1<<22, "\n")
 
 	log.P("starting http server\n")
 
