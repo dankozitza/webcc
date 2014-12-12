@@ -3,11 +3,12 @@
       "backgroundColor":"tan"
    },
    "Links":{
-      "distribution center": "/cc",
+      "distribution center": "/dc",
       "statdist": "/statdist",
       "client conf": "/clientconf",
       "stdout": "/stdout",
-      "file server": "http://localhost:8999",
-      "access": "/access"
+      "access": "/access",
+      "file server": "http://localhost:9001",
+      "404test": "/404"
    }
 }
