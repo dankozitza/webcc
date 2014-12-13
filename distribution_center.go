@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/dankozitza/dkutils"
 	"github.com/dankozitza/logdist"
@@ -14,27 +15,45 @@ import (
 	"time"
 )
 
-var log_file string = "dc.log"
-var access_log string = "dc_access.log"
+var (
+	log_file   = flag.String("l", "dc.log", "log file to print to")
+	access_log = flag.String(
+		"a", "dc_access.log", "log file to print http logs")
+	client_conf_file = flag.String(
+		"cc", "client_config.json", "json config file for client")
+	conf_file = flag.String("c", "config.json", "json config file for server")
+)
 
-var conf sconf.Sconf = sconf.Init("config.json",
-	sconf.Sconf{"logtrack_default_log_file": log_file})
+var (
+	conf sconf.Sconf = sconf.Init(
+		*conf_file,
+		sconf.Sconf{"logtrack_default_log_file": *log_file})
 
-var client_config_file = "client_config.json"
-var client_conf sconf.Sconf = sconf.New(client_config_file,
-	sconf.Sconf{
-		"Links": map[string]interface{}{
-			"client conf":         "/clientconf",
-			"statdist":            "/statdist",
-			"stdout":              "/stdout",
-			"access":              "/access",
-			"distribution center": "/dc",
-			"file server":         "http://localhost:9001"}})
+	client_conf sconf.Sconf = sconf.New(
+		*client_conf_file,
+		sconf.Sconf{
+			"Links": map[string]interface{}{
+				"client conf":         "/clientconf",
+				"statdist":            "/statdist",
+				"stdout":              "/stdout",
+				"access":              "/access",
+				"distribution center": "/dc",
+				"file server":         "http://localhost:9001"}})
+)
 
-var log logtrack.LogTrack = logtrack.New()
-var access logtrack.LogTrack = logtrack.New()
+var (
+	log    = logtrack.New()
+	access = logtrack.New()
+	stat   = stattrack.New("test distribution center")
+	fsh    = http.FileServer(http.Dir("/tmp/static"))
+)
 
-var stat stattrack.StatTrack = stattrack.New("test distribution center")
+func Usage() {
+	fmt.Fprintf(os.Stderr, "Usage: %s [OPTIONS]\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "\nOptions:\n")
+	flag.PrintDefaults()
+	fmt.Fprintf(os.Stderr, "\n")
+}
 
 type staticfile string
 
@@ -42,7 +61,7 @@ func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	access.P(r.RemoteAddr, " ", r, "\n")
 
-	err := client_conf.Update(client_config_file)
+	err := client_conf.Update(*client_conf_file)
 	if err != nil {
 		stat.Warn("could not update client_conf: " + err.Error())
 
@@ -73,8 +92,6 @@ func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//stat.Pass("served " + fmt.Sprint(r.URL) + " to " + r.RemoteAddr)
 }
 
-var fsh http.Handler = http.FileServer(http.Dir("/tmp/static"))
-
 type myFileServer struct{}
 
 func (mfs myFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -93,8 +110,11 @@ func main() {
 	var links map[string]interface{}
 	links = client_conf["Links"].(map[string]interface{})
 
-	access.Log_file = access_log
+	access.Log_file = *access_log
 	access.To_Stdout = false
+
+	flag.Usage = Usage
+	flag.Parse()
 
 	var fsh myFileServer
 	s := &http.Server{
@@ -115,10 +135,10 @@ func main() {
 	var sldh logdist.HTTPHandler = "stdout"
 	http.Handle(links["stdout"].(string), sldh)
 
-	var ldh logdist.HTTPHandler = logdist.HTTPHandler(log_file)
+	var ldh logdist.HTTPHandler = logdist.HTTPHandler(*log_file)
 	http.Handle("/logfile", ldh)
 
-	var ah logdist.HTTPHandler = logdist.HTTPHandler(access_log)
+	var ah logdist.HTTPHandler = logdist.HTTPHandler(*access_log)
 	http.Handle(links["access"].(string), ah)
 
 	var in staticfile = "index.htm"
@@ -149,9 +169,9 @@ func fix_config_links() {
 
 	// otherwise warn and overwrite it
 	default:
-		stat.Warn("client_config[\"Links\"] is not type map[string]interface{}." +
+		stat.Warn("client_conf[\"Links\"] is not type map[string]interface{}." +
 			" Making it type map[string]interface{}. Check sconf config file: " +
-			client_config_file)
+			*client_conf_file)
 		var freshlinks map[string]interface{}
 		client_conf["Links"] = freshlinks
 		links = client_conf["Links"].(map[string]interface{})
@@ -173,7 +193,7 @@ func fix_config_links() {
 		// otherwise warn and set default
 		default:
 			stat.Warn("Links[\"" + k + "\"] is not type string. Check sconf " +
-				"config file: " + client_config_file + ". Setting Links[\"" + k +
+				"config file: " + *client_conf_file + ". Setting Links[\"" + k +
 				"\"] to default: /" + k)
 			links[k] = "/" + k
 			return
