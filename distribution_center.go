@@ -16,6 +16,9 @@ import (
 )
 
 var (
+	address    = flag.String("h", "localhost", "ip address to host on")
+	port       = flag.String("p", "9000", "port to host on")
+	ftpport    = flag.String("f", "9001", "port to host ftp on")
 	log_file   = flag.String("l", "dc.log", "log file to print to")
 	access_log = flag.String(
 		"a", "dc_access.log", "log file to print http logs")
@@ -27,7 +30,12 @@ var (
 var (
 	conf sconf.Sconf = sconf.Init(
 		*conf_file,
-		sconf.Sconf{"logtrack_default_log_file": *log_file})
+		sconf.Sconf{
+			"logtrack_default_log_file": *log_file,
+			"access_log":                *access_log,
+			"address":                   *address,
+			"port":                      *port,
+			"ftpport":                   *ftpport})
 
 	client_conf sconf.Sconf = sconf.New(
 		*client_conf_file,
@@ -110,7 +118,7 @@ func main() {
 	var links map[string]interface{}
 	links = client_conf["Links"].(map[string]interface{})
 
-	access.Log_file = *access_log
+	access.Log_file = conf["access_log"].(string)
 	access.To_Stdout = false
 
 	flag.Usage = Usage
@@ -118,7 +126,7 @@ func main() {
 
 	var fsh myFileServer
 	s := &http.Server{
-		Addr:           "localhost:9001",
+		Addr:           conf["address"].(string) + ":" + conf["ftpport"].(string),
 		Handler:        fsh,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
@@ -135,10 +143,11 @@ func main() {
 	var sldh logdist.HTTPHandler = "stdout"
 	http.Handle(links["stdout"].(string), sldh)
 
-	var ldh logdist.HTTPHandler = logdist.HTTPHandler(*log_file)
+	var ldh logdist.HTTPHandler = logdist.HTTPHandler(
+		conf["logtrack_default_log_file"].(string))
 	http.Handle("/logfile", ldh)
 
-	var ah logdist.HTTPHandler = logdist.HTTPHandler(*access_log)
+	var ah logdist.HTTPHandler = logdist.HTTPHandler(conf["access_log"].(string))
 	http.Handle(links["access"].(string), ah)
 
 	var in staticfile = "index.htm"
@@ -146,7 +155,9 @@ func main() {
 
 	log.P("starting http server\n")
 
-	log.P(http.ListenAndServe("localhost:9000", nil))
+	log.P(http.ListenAndServe(
+		conf["address"].(string)+":"+conf["port"].(string),
+		nil))
 	return
 }
 
