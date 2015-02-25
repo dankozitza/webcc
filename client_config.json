@@ -9,6 +9,7 @@
       "stdout": "/stdout",
       "access": "/access",
       "file server": "http://localhost:9001",
-      "404test": "/404"
+      "404test": "/404",
+		"ffetcher": "/ffetch"
    }
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/dankozitza/sconf"
 	"github.com/dankozitza/statdist"
 	"github.com/dankozitza/stattrack"
+	"github.com/dankozitza/ffetcher"
 	"io"
 	"net/http"
 	"os"
@@ -22,6 +23,8 @@ var (
 	log_file   = flag.String("l", "dc.log", "log file to print to")
 	access_log = flag.String(
 		"a", "dc_access.log", "log file to print http logs")
+	ffetch_conf_file = flag.String(
+		"fc", "ffetch_config.json", "json config file for ffetch")
 	client_conf_file = flag.String(
 		"cc", "client_config.json", "json config file for client")
 	conf_file = flag.String("c", "config.json", "json config file for server")
@@ -46,7 +49,12 @@ var (
 				"stdout":              "/stdout",
 				"access":              "/access",
 				"distribution center": "/dc",
-				"file server":         "http://localhost:9001"}})
+				"file server":         "http://localhost:9001",
+				"ffetcher":            "/fetcher"}})
+
+	ffetch_conf sconf.Sconf = sconf.New(
+		*ffetch_conf_file,
+		sconf.Sconf{})
 )
 
 var (
@@ -152,6 +160,25 @@ func main() {
 
 	var in staticfile = "index.htm"
 	http.Handle(links["distribution center"].(string), in)
+
+	var f ffetcher.Ffetcher = make(ffetcher.Ffetcher)
+	go ffetcher.Crawl(conf["ffetch_url"].(string), int(conf["ffetch_depth"].(float64)), f)
+
+	ffetch_conf["ffetcher"] = f
+
+	var fh sconf.HTTPHandler = sconf.HTTPHandler(ffetch_conf)
+	http.Handle(links["ffetcher"].(string), fh)
+
+	//for u, _ := range f {
+
+	//	client_conf["ffetcher"].(map[string]*ffetcher.Fresult)[u] = f[u]
+	//	//<-fetcher[u].done
+	//	//fmt.Println("fetcher[", u, "] = {\n body\n urls = [")
+	//	//for _, s := range fetcher[u].urls {
+	//	//	fmt.Println("", s, ",")
+	//	//}
+	//	//fmt.Println(" ]\n}")
+	//}
 
 	log.P("starting http server\n")
 

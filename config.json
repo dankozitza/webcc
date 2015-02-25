@@ -1,4 +1,8 @@
 {
    "logtrack_verbosity_level": 5,
-	"logtrack_default_log_file": "dc.log"
+	"logtrack_default_log_file": "dc.log",
+	"address": "10.0.1.2",
+	"port": "9000",
+	"ffetch_url": "http://golang.org/",
+	"ffetch_depth": 1
 }
