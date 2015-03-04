@@ -1,8 +1,21 @@
 {
    "logtrack_verbosity_level": 5,
 	"logtrack_default_log_file": "dc.log",
-	"address": "10.0.1.2",
+	"address": "localhost",
 	"port": "9000",
-	"ffetch_url": "http://golang.org/",
-	"ffetch_depth": 1
+	"ffetch_url": "http://4chan.org/f/",
+	"ffetch_depth": 1,
+	"ffetcher_template": {
+		"job": {
+			"ffetch_url": null,
+			"ffetch_depth": null,
+			"status": null,
+			"links": [
+				{
+					"href": "/jobs",
+					"rel": "index"
+				}
+			]
+		}
+	}
 }

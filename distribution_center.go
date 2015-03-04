@@ -162,12 +162,12 @@ func main() {
 	http.Handle(links["distribution center"].(string), in)
 
 	var f ffetcher.Ffetcher = make(ffetcher.Ffetcher)
-	go ffetcher.Crawl(conf["ffetch_url"].(string), int(conf["ffetch_depth"].(float64)), f)
+	//go ffetcher.Crawl(conf["ffetch_url"].(string), int(conf["ffetch_depth"].(float64)), f)
 
-	ffetch_conf["ffetcher"] = f
+	//ffetch_conf["ffetcher"] = f
+	var fhh ffetcher.HTTPHandler = ffetcher.HTTPHandler(f)
 
-	var fh sconf.HTTPHandler = sconf.HTTPHandler(ffetch_conf)
-	http.Handle(links["ffetcher"].(string), fh)
+	http.Handle(links["ffetcher"].(string), fhh)
 
 	//for u, _ := range f {
 
