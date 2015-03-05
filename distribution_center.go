@@ -50,7 +50,7 @@ var (
 				"access":              "/access",
 				"distribution center": "/dc",
 				"file server":         "http://localhost:9001",
-				"ffetcher":            "/fetcher"}})
+				"ffetcher":            conf["fetcher_index"]}})
 
 	ffetch_conf sconf.Sconf = sconf.New(
 		*ffetch_conf_file,
@@ -162,12 +162,9 @@ func main() {
 	http.Handle(links["distribution center"].(string), in)
 
 	var f ffetcher.Ffetcher = make(ffetcher.Ffetcher)
-	//go ffetcher.Crawl(conf["ffetch_url"].(string), int(conf["ffetch_depth"].(float64)), f)
-
-	//ffetch_conf["ffetcher"] = f
 	var fhh ffetcher.HTTPHandler = ffetcher.HTTPHandler(f)
 
-	http.Handle(links["ffetcher"].(string), fhh)
+	http.Handle(conf["ffetcher_index"].(string), fhh)
 
 	//for u, _ := range f {
 

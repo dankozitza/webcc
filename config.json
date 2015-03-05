@@ -3,19 +3,6 @@
 	"logtrack_default_log_file": "dc.log",
 	"address": "localhost",
 	"port": "9000",
-	"ffetch_url": "http://4chan.org/f/",
-	"ffetch_depth": 1,
-	"ffetcher_template": {
-		"job": {
-			"ffetch_url": null,
-			"ffetch_depth": null,
-			"status": null,
-			"links": [
-				{
-					"href": "/jobs",
-					"rel": "index"
-				}
-			]
-		}
-	}
+	"ffetcher_index": "/ffetcher",
+	"ffetcher_urls_size": 6
 }
