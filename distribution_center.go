@@ -75,7 +75,8 @@ type staticfile string
 
 func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	access.P(r.RemoteAddr, " ", r, "\n")
+	record, _ := dkutils.DeepTypeSprint(r)
+	access.P(r.RemoteAddr, " " + record + "\n")
 
 	err := client_conf.Update(*client_conf_file)
 	if err != nil {
@@ -111,7 +112,8 @@ func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 type myFileServer struct{}
 
 func (mfs myFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	access.P(r.RemoteAddr, " ", r, "\n")
+	record, _ := dkutils.DeepTypeSprint(r)
+	access.P(r.RemoteAddr, " " + record  + "\n")
 
 	fsh.ServeHTTP(w, r)
 	//access.P("---response: ", w, "\n")
