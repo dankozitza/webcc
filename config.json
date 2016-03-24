@@ -2,7 +2,7 @@
    "logtrack_verbosity_level": 5,
 	"logtrack_default_log_file": "dc.log",
 	"address": "localhost",
-	"port": "9000",
+	"port": "8080",
 	"ffetcher_index": "/ffetcher",
-	"ffetcher_urls_size": 6
+	"ffetcher_urls_size": 1024
 }

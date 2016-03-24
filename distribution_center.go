@@ -42,10 +42,11 @@ var (
 
 	client_conf sconf.Sconf = sconf.New(
 		*client_conf_file,
-		sconf.Sconf{
+		sconf.Sconf{ // these must be entered in client_config.json
 			"Links": map[string]interface{}{
 				"client conf":         "/clientconf",
 				"statdist":            "/statdist",
+            "post_stat":           "/post_stat",
 				"stdout":              "/stdout",
 				"access":              "/access",
 				"distribution center": "/dc",
@@ -75,8 +76,8 @@ type staticfile string
 
 func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	record, _ := dkutils.DeepTypeSprint(r)
-	access.P(r.RemoteAddr, " " + record + "\n")
+	record := fmt.Sprint(r)//dkutils.DeepTypeSprint(r)
+	access.P(r.RemoteAddr, " ", record, "\n")
 
 	err := client_conf.Update(*client_conf_file)
 	if err != nil {
@@ -112,11 +113,10 @@ func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 type myFileServer struct{}
 
 func (mfs myFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	record, _ := dkutils.DeepTypeSprint(r)
+	record := fmt.Sprint(r)//dkutils.DeepTypeSprint(r)
 	access.P(r.RemoteAddr, " " + record  + "\n")
 
 	fsh.ServeHTTP(w, r)
-	//access.P("---response: ", w, "\n")
 
 	stat.Pass("served " + fmt.Sprint(r.URL) + " to " + r.RemoteAddr)
 }
@@ -150,6 +150,9 @@ func main() {
 	var jsm statdist.HTTPHandler
 	http.Handle(links["statdist"].(string), jsm)
 
+	var sp statdist.HTTPPostHandler
+	http.Handle(links["post_stat"].(string), sp)
+
 	var sldh logdist.HTTPHandler = "stdout"
 	http.Handle(links["stdout"].(string), sldh)
 
@@ -167,17 +170,6 @@ func main() {
 	var fhh ffetcher.HTTPHandler = ffetcher.HTTPHandler(f)
 
 	http.Handle(conf["ffetcher_index"].(string), fhh)
-
-	//for u, _ := range f {
-
-	//	client_conf["ffetcher"].(map[string]*ffetcher.Fresult)[u] = f[u]
-	//	//<-fetcher[u].done
-	//	//fmt.Println("fetcher[", u, "] = {\n body\n urls = [")
-	//	//for _, s := range fetcher[u].urls {
-	//	//	fmt.Println("", s, ",")
-	//	//}
-	//	//fmt.Println(" ]\n}")
-	//}
 
 	log.P("starting http server\n")
 

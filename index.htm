@@ -4,7 +4,7 @@
 <html>
 <head>
    <meta charset="UTF-8" />
-   <title>Control Center</title>
+   <title>Distribution Center</title>
 </head>
 <body id="main">
 
@@ -74,17 +74,25 @@ xhr.open('GET', "/statdist", false);
 xhr.send();
 
 // creat an object from the statdist JSON
-var statMap = eval('(' + xhr.response + ')');
+var progStatMap = eval('(' + xhr.response + ')');
 
-// display statMap
-var i = 0;
-document.write("<table>");// style=\"table-layout:fixed;width:800px\">")
-document.write("<tr>" + buildcollumbs(Object.keys(statMap["0"])) + "</tr>")
-while (statMap[i.toString()]) {
-   document.write("<tr>" + buildcollumbs(statMap[i.toString()]) + "</tr>")
-   i++;
+for (prog in progStatMap) {
+   var statMap = progStatMap[prog];
+
+   document.write("<h4>" + prog + "</h4>\n");
+
+   // display statMap
+   document.write("<table>");
+   // print the names of the collumns
+   for (k in statMap) { // only need one
+      document.write("<tr>" + buildcollumbs(Object.keys(statMap[k])) + "</tr>")
+      break;
+   }
+   for (k in statMap) {
+      document.write("<tr>" + buildcollumbs(statMap[k]) + "</tr>")
+   }
+   document.write("</table>")
 }
-document.write("</table>")
 </script>
 
 <h2>clientconf</h2>
