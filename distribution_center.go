@@ -76,8 +76,8 @@ type staticfile string
 
 func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	record := fmt.Sprint(r) //dkutils.DeepTypeSprint(r)
-	access.P(r.RemoteAddr, " ", record, "\n")
+	//record, _ := dkutils.DeepTypeSprint(r)
+	access.P(r.RequestURI, " ", r.Proto, " ", fmt.Sprint(r.Header), "\n")
 
 	err := client_conf.Update(*client_conf_file)
 	if err != nil {
