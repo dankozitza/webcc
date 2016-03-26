@@ -61,14 +61,14 @@ for (linkName in config.Links) {
 }
 </script>
 
-<p><br>Post a status: curl -d "program=pname&id=0&message=&short_stack=&stack=&status=PASS" dankozitza.com/post_stat</p>
+<p><br>Post a status: curl -d "program=user_status&id=0&status=PASS&short_stack=&message=&stack=" dankozitza.com/post_stat</p>
 
 <script>
 var xhr = new XMLHttpRequest();
 xhr.open('GET', "/statdist", false);
 xhr.send();
 
-// creat an object from the statdist JSON
+// create an object from the statdist JSON
 var progStatMap = eval('(' + xhr.response + ')');
 for (prog in progStatMap) {
 	var statMap = progStatMap[prog];

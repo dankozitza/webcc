@@ -10,7 +10,6 @@
 		"post stat": "/post_stat",
 		"client conf": "/clientconf",
 		"stdout": "/stdout",
-		"access": "/access",
-		"404test": "/404"
+		"access": "/access"
 	}
 }
