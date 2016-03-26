@@ -16,42 +16,42 @@ import (
 )
 
 var (
-	address	 = flag.String("h", "localhost", "ip address to host on")
-	port		 = flag.String("p", "9000", "port to host on")
-	ftpport	 = flag.String("f", "9001", "port to host ftp on")
-	log_file	= flag.String("l", "dc.log", "log file to print to")
+	address    = flag.String("h", "localhost", "ip address to host on")
+	port       = flag.String("p", "9000", "port to host on")
+	ftpport    = flag.String("f", "9001", "port to host ftp on")
+	log_file	  = flag.String("l", "dc.log", "log file to print to")
 	access_log = flag.String(
 		"a", "dc_access.log", "log file to print http logs")
 	ffetch_conf_file = flag.String(
 		"fc", "ffetch_config.json", "json config file for ffetch")
 	client_conf_file = flag.String(
 		"cc", "client_config.json", "json config file for client")
-	conf_file = flag.String("c", "config.json", "json config file for server")
+	conf_file  = flag.String("c", "config.json", "json config file for server")
 )
 
 var (
 	conf sconf.Sconf = sconf.Init(
 		*conf_file,
 		sconf.Sconf{
-			"logtrack_default_log_file": *log_file,
-			"access_log":					 *access_log,
-			"address":						 *address,
-			"port":							 *port,
-			"ftpport":						 *ftpport})
+         "logtrack_default_log_file": *log_file,
+         "access_log":                *access_log,
+         "address":                   *address,
+         "port":                      *port,
+         "ftpport":                   *ftpport})
 
 	client_conf sconf.Sconf = sconf.New(
 		*client_conf_file,
 		sconf.Sconf{ // these must be entered in client_config.json
 			"Links": map[string]interface{}{
-				"client conf":			"/clientconf",
-				"statdist":				"/statdist",
-				"remote statdist":	  "/rs",
-				"post stat":			  "/post_stat",
-				"stdout":				  "/stdout",
-				"access":				  "/access",
+				"client conf":         "/clientconf",
+				"statdist":            "/statdist",
+				"remote statdist":     "/rs",
+				"post stat":           "/post_stat",
+				"stdout":              "/stdout",
+				"access":              "/access",
 				"distribution center": "/dc",
-				"root":					 "/",
-				"ffetcher":				conf["fetcher_index"]}})
+				"root":                "/",
+				"ffetcher":            conf["fetcher_index"]}})
 
 	ffetch_conf sconf.Sconf = sconf.New(
 		*ffetch_conf_file,
@@ -59,10 +59,10 @@ var (
 )
 
 var (
-	log	 = logtrack.New()
+	log    = logtrack.New()
 	access = logtrack.New()
-	stat	= stattrack.New("test distribution center")
-	fsh	 = http.FileServer(http.Dir("/tmp/static"))
+	stat   = stattrack.New("test distribution center")
+	fsh    = http.FileServer(http.Dir("/tmp/static"))
 )
 
 func Usage() {

@@ -13,20 +13,17 @@
 		border: 1px solid grey;
 		background-color: white;
 	}
-	body {
-		background-color: tan;
-	}
 </style>
 
 <script>
-// buildcollumbs
+// buildcolumns
 //
 // takes an object and iterates through it's properties returning a string
 // with td tags wrapped around the values of the object's properties. expected
 // to be used on stat objects. colors the td tags if the Status property is
 // found.
 //
-function buildcollumbs(s) {
+function buildcolumns(s) {
 	ret = "";
 	for (k in s) {
 		if (k == "Status") {
@@ -73,25 +70,22 @@ xhr.send();
 
 // creat an object from the statdist JSON
 var progStatMap = eval('(' + xhr.response + ')');
-
 for (prog in progStatMap) {
 	var statMap = progStatMap[prog];
-
 	if (prog == "main") {
 		continue;
 	}
-
 	document.write("<h4>" + prog + "</h4>\n");
 
 	// display statMap
 	document.write("<table>");
 	// print the names of the collumns
 	for (k in statMap) { // only need one
-		document.write("<tr>" + buildcollumbs(Object.keys(statMap[k])) + "</tr>")
+		document.write("<tr>" + buildcolumns(Object.keys(statMap[k])) + "</tr>")
 		break;
 	}
 	for (k in statMap) {
-		document.write("<tr>" + buildcollumbs(statMap[k]) + "</tr>")
+		document.write("<tr>" + buildcolumns(statMap[k]) + "</tr>")
 	}
 	document.write("</table>")
 }
