@@ -1,15 +1,16 @@
 {
-   "body":{
-      "backgroundColor":"lightgrey"
-   },
-   "Links":{
-      "distribution center": "/dc",
-      "statdist": "/statdist",
-      "post_stat": "/post_stat",
-      "client conf": "/clientconf",
-      "stdout": "/stdout",
-      "access": "/access",
-      "file server": "http://localhost:9001",
-      "404test": "/404"
-   }
+	"body":{
+		"backgroundColor":"lightgrey"
+	},
+	"Links":{
+		"root": "/",
+		"distribution center": "/dc",
+		"statdist": "/statdist",
+		"remote statdist": "/rs",
+		"post stat": "/post_stat",
+		"client conf": "/clientconf",
+		"stdout": "/stdout",
+		"access": "/access",
+		"404test": "/404"
+	}
 }

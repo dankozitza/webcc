@@ -1,5 +1,5 @@
 {
-   "logtrack_verbosity_level": 5,
+	"logtrack_verbosity_level": 5,
 	"logtrack_default_log_file": "dc.log",
 	"address": "localhost",
 	"port": "8080",

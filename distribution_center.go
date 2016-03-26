@@ -13,14 +13,13 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"time"
 )
 
 var (
-	address    = flag.String("h", "localhost", "ip address to host on")
-	port       = flag.String("p", "9000", "port to host on")
-	ftpport    = flag.String("f", "9001", "port to host ftp on")
-	log_file   = flag.String("l", "dc.log", "log file to print to")
+	address	 = flag.String("h", "localhost", "ip address to host on")
+	port		 = flag.String("p", "9000", "port to host on")
+	ftpport	 = flag.String("f", "9001", "port to host ftp on")
+	log_file	= flag.String("l", "dc.log", "log file to print to")
 	access_log = flag.String(
 		"a", "dc_access.log", "log file to print http logs")
 	ffetch_conf_file = flag.String(
@@ -35,23 +34,24 @@ var (
 		*conf_file,
 		sconf.Sconf{
 			"logtrack_default_log_file": *log_file,
-			"access_log":                *access_log,
-			"address":                   *address,
-			"port":                      *port,
-			"ftpport":                   *ftpport})
+			"access_log":					 *access_log,
+			"address":						 *address,
+			"port":							 *port,
+			"ftpport":						 *ftpport})
 
 	client_conf sconf.Sconf = sconf.New(
 		*client_conf_file,
 		sconf.Sconf{ // these must be entered in client_config.json
 			"Links": map[string]interface{}{
-				"client conf":         "/clientconf",
-				"statdist":            "/statdist",
-            "post_stat":           "/post_stat",
-				"stdout":              "/stdout",
-				"access":              "/access",
+				"client conf":			"/clientconf",
+				"statdist":				"/statdist",
+				"remote statdist":	  "/rs",
+				"post stat":			  "/post_stat",
+				"stdout":				  "/stdout",
+				"access":				  "/access",
 				"distribution center": "/dc",
-				"file server":         "http://localhost:9001",
-				"ffetcher":            conf["fetcher_index"]}})
+				"root":					 "/",
+				"ffetcher":				conf["fetcher_index"]}})
 
 	ffetch_conf sconf.Sconf = sconf.New(
 		*ffetch_conf_file,
@@ -59,10 +59,10 @@ var (
 )
 
 var (
-	log    = logtrack.New()
+	log	 = logtrack.New()
 	access = logtrack.New()
-	stat   = stattrack.New("test distribution center")
-	fsh    = http.FileServer(http.Dir("/tmp/static"))
+	stat	= stattrack.New("test distribution center")
+	fsh	 = http.FileServer(http.Dir("/tmp/static"))
 )
 
 func Usage() {
@@ -76,7 +76,7 @@ type staticfile string
 
 func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	record := fmt.Sprint(r)//dkutils.DeepTypeSprint(r)
+	record := fmt.Sprint(r) //dkutils.DeepTypeSprint(r)
 	access.P(r.RemoteAddr, " ", record, "\n")
 
 	err := client_conf.Update(*client_conf_file)
@@ -110,17 +110,6 @@ func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//stat.Pass("served " + fmt.Sprint(r.URL) + " to " + r.RemoteAddr)
 }
 
-type myFileServer struct{}
-
-func (mfs myFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	record := fmt.Sprint(r)//dkutils.DeepTypeSprint(r)
-	access.P(r.RemoteAddr, " " + record  + "\n")
-
-	fsh.ServeHTTP(w, r)
-
-	stat.Pass("served " + fmt.Sprint(r.URL) + " to " + r.RemoteAddr)
-}
-
 func main() {
 
 	// typecheck client_conf and set defaults
@@ -134,15 +123,14 @@ func main() {
 	flag.Usage = Usage
 	flag.Parse()
 
-	var fsh myFileServer
-	s := &http.Server{
-		Addr:           conf["address"].(string) + ":" + conf["ftpport"].(string),
-		Handler:        fsh,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 22,
-	}
-	go s.ListenAndServe()
+	var in staticfile = "index.htm"
+	http.Handle(links["root"].(string), in)
+
+	var dc staticfile = "dc.htm"
+	http.Handle(links["distribution center"].(string), dc)
+
+	var rs staticfile = "rs.htm"
+	http.Handle(links["remote statdist"].(string), rs)
 
 	var cli sconf.HTTPHandler = sconf.HTTPHandler(client_conf)
 	http.Handle(links["client conf"].(string), cli)
@@ -151,7 +139,7 @@ func main() {
 	http.Handle(links["statdist"].(string), jsm)
 
 	var sp statdist.HTTPPostHandler
-	http.Handle(links["post_stat"].(string), sp)
+	http.Handle(links["post stat"].(string), sp)
 
 	var sldh logdist.HTTPHandler = "stdout"
 	http.Handle(links["stdout"].(string), sldh)
@@ -162,9 +150,6 @@ func main() {
 
 	var ah logdist.HTTPHandler = logdist.HTTPHandler(conf["access_log"].(string))
 	http.Handle(links["access"].(string), ah)
-
-	var in staticfile = "index.htm"
-	http.Handle(links["distribution center"].(string), in)
 
 	var f ffetcher.Ffetcher = make(ffetcher.Ffetcher)
 	var fhh ffetcher.HTTPHandler = ffetcher.HTTPHandler(f)
