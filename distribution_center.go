@@ -72,6 +72,12 @@ func Usage() {
 	fmt.Fprintf(os.Stderr, "\n")
 }
 
+type exit struct{}
+
+func (f exit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	os.Exit(0);
+}
+
 type staticfile string
 
 func (f staticfile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -153,8 +159,12 @@ func main() {
 
 	var f ffetcher.Ffetcher = make(ffetcher.Ffetcher)
 	var fhh ffetcher.HTTPHandler = ffetcher.HTTPHandler(f)
-
 	http.Handle(conf["ffetcher_index"].(string), fhh)
+
+	// when this is called the loop running on the docker image will update
+	// the go files and restart the server.
+	var e exit
+	http.Handle("/update", e)
 
 	log.P("starting http server\n")
 
